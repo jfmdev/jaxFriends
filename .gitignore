@@ -1,0 +1,12 @@
+# Configuration and properties files.
+source/.classpath
+source/.metadata
+source/.project
+source/local.properties
+
+# Temporary and settings folders.
+source/bin/
+source/build/
+source/tmp/
+source/target/
+source/.settings/
