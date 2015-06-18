@@ -1,4 +1,4 @@
-package io.github.jfmdev.jaxFriends.rest;
+package io.github.jfmdev.jaxfriends.rest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -9,8 +9,8 @@ import javax.ws.rs.Produces;
 
 import com.google.gson.Gson;
 
-@Path("/account")
-public class AccountResource {
+@Path("/session")
+public class SessionResource {
 	@POST
 	@Path("/login")
 	@Produces("application/json")

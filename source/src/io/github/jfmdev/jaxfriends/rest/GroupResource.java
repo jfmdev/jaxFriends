@@ -1,4 +1,4 @@
-package io.github.jfmdev.jaxFriends.rest;
+package io.github.jfmdev.jaxfriends.rest;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -10,8 +10,8 @@ import javax.ws.rs.Produces;
 
 import com.google.gson.Gson;
 
-@Path("/friends")
-public class FriendResource {
+@Path("/groups")
+public class GroupResource {
 	@GET
 	@Produces("application/json")
 	public String list() {

@@ -1,4 +1,6 @@
-package io.github.jfmdev.jaxFriends.rest;
+package io.github.jfmdev.jaxfriends.rest;
+
+import io.github.jfmdev.jaxfriends.dal.DBUtils;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -10,12 +12,12 @@ import javax.ws.rs.Produces;
 
 import com.google.gson.Gson;
 
-@Path("/groups")
-public class GroupResource {
+@Path("/friends")
+public class FriendResource {
 	@GET
 	@Produces("application/json")
-	public String list() {
-		return "[{test: 'hola'}, {test: 'chau'}]";
+	public String list() throws Exception {
+		return "[{test: 'hola'}, {test: '"+DBUtils.test()+"'}]";
 	}
  
 	@GET
