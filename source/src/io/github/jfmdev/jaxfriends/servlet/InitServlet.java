@@ -1,6 +1,6 @@
 package io.github.jfmdev.jaxfriends.servlet;
 
-import io.github.jfmdev.jaxfriends.dal.DBUtils;
+import io.github.jfmdev.jaxfriends.dal.DbUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,21 +42,21 @@ public class InitServlet extends HttpServlet {
             props.load(fileData);
             
             // Save connection values.
-            DBUtils.setConnectionParams(
+            DbUtils.setConnectionParams(
                 "jdbc:mysql://"+props.getProperty("dbHost")+":"+props.getProperty("dbPort")+"/"+props.getProperty("dbName"), 
                 props.getProperty("dbUser"), 
                 props.getProperty("dbPass")
             );
             
             // Verify if the tables must be created.
-            DBUtils.initialize();
+            DbUtils.initialize();
         }catch(IOException|SQLException e) {
             System.err.println(e);
             Logger.error(e);
         }
         
         // Create log entry.
-        Logger.info("Initialization servlet executed successfully");
+        Logger.info("Initialization servlet executed");
     }
 }
 

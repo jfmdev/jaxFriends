@@ -12,7 +12,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.pmw.tinylog.Logger;
 
-public class DBUtils {
+/**
+ * Utility class for database operations.
+ * 
+ * @author jfmdev
+ */
+public class DbUtils {
     /**
      * Connection string to the database.
      */
@@ -73,6 +78,9 @@ public class DBUtils {
             admin.setUsername("admin");
             admin.setPassword(toSHA1("admin"));
             usersDao.create(admin);
+            
+            // Create log entry.
+            Logger.info("Table 'user' created");
         }
 
         // TODO: Initialize groups tables.

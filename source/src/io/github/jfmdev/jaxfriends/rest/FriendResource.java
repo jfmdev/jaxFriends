@@ -1,6 +1,6 @@
 package io.github.jfmdev.jaxfriends.rest;
 
-import io.github.jfmdev.jaxfriends.dal.DBUtils;
+import io.github.jfmdev.jaxfriends.dal.DbUtils;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
