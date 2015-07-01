@@ -26,34 +26,41 @@
     </plugins>
   </build>
 <dependencies>
-	<!-- Jersey -->
-	<dependency>
-		<groupId>asm</groupId>
-		<artifactId>asm</artifactId>
-		<version>3.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>com.sun.jersey</groupId>
-		<artifactId>jersey-bundle</artifactId>
-		<version>1.19</version>
-	</dependency>
-	<dependency>
-		<groupId>org.json</groupId>
-		<artifactId>json</artifactId>
-		<version>20140107</version>
-	</dependency>
-	<dependency>
-		<groupId>com.sun.jersey</groupId>
-		<artifactId>jersey-server</artifactId>
-		<version>1.19</version>
-	</dependency>
-	<dependency>
-		<groupId>com.sun.jersey</groupId>
-		<artifactId>jersey-core</artifactId>
-		<version>1.19</version>
-	</dependency>
-	<!-- Gson -->
-	<dependency>
+    <!-- Jersey -->
+    <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>3.3.1</version>
+    </dependency>
+    <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-bundle</artifactId>
+            <version>1.19</version>
+    </dependency>
+    <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20140107</version>
+    </dependency>
+    <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>1.19</version>
+    </dependency>
+    <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>1.19</version>
+    </dependency>
+    <!-- Javax -->
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+    </dependency>    
+    <!-- Gson -->
+    <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>2.3.1</version>
@@ -70,6 +77,12 @@
         <groupId>mysql</groupId>
         <artifactId>mysql-connector-java</artifactId>
         <version>5.1.10</version>
+    </dependency>    
+    <!-- TinyLog -->
+    <dependency>
+        <groupId>org.tinylog</groupId>
+        <artifactId>tinylog</artifactId>
+        <version>1.0</version>
     </dependency>    
 </dependencies>  
 </project>

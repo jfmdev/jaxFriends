@@ -17,7 +17,7 @@ public class FriendResource {
 	@GET
 	@Produces("application/json")
 	public String list() throws Exception {
-		return "[{test: 'hola'}, {test: '"+DBUtils.test()+"'}]";
+		return "[{test: 'hola'}, {test: '0'}]";
 	}
  
 	@GET
