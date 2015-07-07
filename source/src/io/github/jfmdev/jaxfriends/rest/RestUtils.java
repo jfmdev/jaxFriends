@@ -2,6 +2,9 @@ package io.github.jfmdev.jaxfriends.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.github.jfmdev.jaxfriends.dal.User;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * Utility class for REST operations.
@@ -39,7 +42,7 @@ public class RestUtils {
     public static String successResult(Object data) {
         JsonObject res = new JsonObject();
         res.addProperty("status", "success");
-        res.addProperty("data", data != null? gson.toJson(data) : null);
+        res.add("data", data != null? gson.toJsonTree(data) : null);
         return gson.toJson(res);
     }
     
@@ -70,5 +73,48 @@ public class RestUtils {
         res.add("error", error);
 
         return gson.toJson(res);
+    }
+
+    /**
+     * Returns the id of the user, is available.
+     * 
+     * @param request The Request's object.
+     * @return The user's id or 'null' if the user is not logged.
+     */
+    public static Integer getUserId(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+    	Object tmpUser = session.getAttribute("user");
+        if(tmpUser != null && tmpUser instanceof User) {
+            User user = (User) tmpUser;
+            return user.getId();
+        }
+        return null;
+    }
+    
+    /**
+     * Verifies if the user is logged.
+     * 
+     * @param request The Request's object.
+     * @return 'true' if the user is logged, 'false' otherwise.
+     */
+    public static boolean isLogged(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+    	return session.getAttribute("user") != null;
+    }
+    
+    /**
+     * Verifies if the user is logged and is an administrator.
+     * 
+     * @param request The Request's object.
+     * @return 'true' if the user is logged and is an administrator, 'false' otherwise.
+     */
+    public static boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+    	Object tmpUser = session.getAttribute("user");
+        if(tmpUser != null && tmpUser instanceof User) {
+            User user = (User) tmpUser;
+            return user.getAdmin() == true;
+        }
+        return false;
     }
 }
