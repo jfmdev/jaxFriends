@@ -77,6 +77,7 @@ public class SessionResource {
     public String udpate(@Context HttpServletRequest request, 
             @FormParam("username") String username, 
             @FormParam("password") String password) {
+        String res;
         
         // Verify if the user is logged.
         HttpSession session = request.getSession(true);
@@ -93,7 +94,6 @@ public class SessionResource {
 
                     // Verify that the username is not already being used and close connection to the database.
                     List<User> users = usersDao.queryForEq("username", username);
-                    conn.close();
                     if(users.isEmpty() || (users.size() == 1 && Objects.equals(users.get(0).getId(), user.getId()))) {
                         // Update the user.
                         user.setUsername(username);
@@ -101,23 +101,28 @@ public class SessionResource {
                         usersDao.update(user);
 
                         // Return response.
-                        return RestUtils.successResult();
+                        res = RestUtils.successResult();
                     } else {
                         // Return error message.
-                        return RestUtils.errorResult("InvalidParameters", "The username is already being used by other user");
+                        res = RestUtils.errorResult("InvalidParameters", "The username is already being used by other user");
                     }
+                    
+                    // Close connection to the database.
+                    conn.close();
                 } else {
                     // Return error message.
-                    return RestUtils.errorResult("InvalidParameters", "The username can't be empty");
+                    res = RestUtils.errorResult("InvalidParameters", "The username can't be empty");
                 }
             }catch(SQLException e) {
                 // Log error and return error message.
                 Logger.error(e);
-                return RestUtils.errorResult(e);
+                res = RestUtils.errorResult(e);
             }
         } else {
             // The user is not logged.
-            return RestUtils.errorResult("AccessDenied", "You must be logged to udpdate your account");
+            res = RestUtils.errorResult("AccessDenied", "You must be logged to udpdate your account");
         }
+        
+        return res;
     }
 }

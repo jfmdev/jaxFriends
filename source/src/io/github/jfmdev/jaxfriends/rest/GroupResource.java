@@ -36,6 +36,7 @@ public class GroupResource {
                 
                 // List and return all groups from the user.
                 List<Group> groups = groupsDao.queryForEq("userId", RestUtils.getUserId(request));
+                conn.close();
                 return RestUtils.successResult(groups);
             }
         }catch(SQLException e) {
@@ -50,6 +51,7 @@ public class GroupResource {
     @Path("{id}")
     @Produces("application/json")
     public String findById(@Context HttpServletRequest request, @PathParam("id") Integer id) {
+        String res;
         try{
             // Verify if the user is logged.
             if(RestUtils.isLogged(request)) {
@@ -57,16 +59,19 @@ public class GroupResource {
                 ConnectionSource conn = DbUtils.getConnection();
                 Dao<Group,String> groupsDao = DaoManager.createDao(conn, Group.class); 
                 
-                // List and return all groups
+                // Search the group.
                Group group = groupsDao.queryForId(id+"");
-                return RestUtils.successResult(group);
+               res = RestUtils.successResult(group);
+               conn.close();
+            } else {
+                res = RestUtils.errorResult("AccessDenied", "You must be logged to get a group's data");
             }
         }catch(SQLException e) {
             // Log error and return error message.
             Logger.error(e);
-            return RestUtils.errorResult(e);
+            res = RestUtils.errorResult(e);
         }
-        return RestUtils.errorResult("AccessDenied", "You must be logged to get a group's data");
+        return res;
     }
 
     @POST
@@ -74,7 +79,7 @@ public class GroupResource {
     public String create(@Context HttpServletRequest request, @FormParam("name") final String name) {
         String res;
         try {
-            // Verify if the user is logged and is an administrator.
+            // Verify if the user is logged.
             if(RestUtils.isLogged(request)) {
                 // Verify that the name if not empty.
                 if(name != null && !name.isEmpty()) {
@@ -126,7 +131,7 @@ public class GroupResource {
     public String update(@Context HttpServletRequest request, @PathParam("id") Integer id, @FormParam("name") final String name) {
         String res;
         try {
-            // Verify if the user is logged and is an administrator.
+            // Verify if the user is logged.
             if(RestUtils.isLogged(request)) {
                 // Verify that the name if not empty.
                 if(name != null && !name.isEmpty()) {
@@ -183,40 +188,40 @@ public class GroupResource {
     public String delete(@Context HttpServletRequest request, @PathParam("id") Integer id) {
         String res;
         try {
-            // Verify if the user is logged and is an administrator.
+            // Verify if the user is logged.
             if(RestUtils.isLogged(request)) {
-                    // Get connection to the database.
-                    ConnectionSource conn = DbUtils.getConnection();
-                    Dao<Group,String> groupsDao = DaoManager.createDao(conn, Group.class); 
-                    Dao<Friend,String> friendsDao = DaoManager.createDao(conn, Friend.class); 
-                    Group group = groupsDao.queryForId(id+"");
-                    final Integer userId = RestUtils.getUserId(request);
-                    
-                    // Verify that the group exists and belongs to the user.
-                    if(group != null && Objects.equals(group.getUserId(), userId)) {
-                        // Verify that the group is not used in any contact
-                        List<Friend> friends = friendsDao.queryForEq("group_id", id);
-                        if(friends.isEmpty()) {
-                            // Delete the group.
-                            groupsDao.deleteById(id+"");
+                // Get connection to the database.
+                ConnectionSource conn = DbUtils.getConnection();
+                Dao<Group,String> groupsDao = DaoManager.createDao(conn, Group.class); 
+                Dao<Friend,String> friendsDao = DaoManager.createDao(conn, Friend.class); 
+                Group group = groupsDao.queryForId(id+"");
+                final Integer userId = RestUtils.getUserId(request);
 
-                            // Return response.
-                            res = RestUtils.successResult();
-                        } else {
-                            // Return error message.
-                            res = RestUtils.errorResult("ReferentialConstraint", "You can't delete a group that is being used in some friends");
-                        }
+                // Verify that the group exists and belongs to the user.
+                if(group != null && Objects.equals(group.getUserId(), userId)) {
+                    // Verify that the group is not used in any contact
+                    List<Friend> friends = friendsDao.queryForEq("group_id", id);
+                    if(friends.isEmpty()) {
+                        // Delete the group.
+                        groupsDao.deleteById(id+"");
+
+                        // Return response.
+                        res = RestUtils.successResult();
                     } else {
-                        // Set error message.
-                        res = RestUtils.errorResult("InvalidParameters", "The group that you want to delete do not exists or do not belongs to your user");
+                        // Return error message.
+                        res = RestUtils.errorResult("ReferentialConstraint", "You can't delete a group that is being used in some friends");
                     }
-                    
-                    // Close connection to the database.
-                    conn.close();
                 } else {
                     // Set error message.
-                    res = RestUtils.errorResult("AccessDenied", "You must be logged to delete a group");
+                    res = RestUtils.errorResult("InvalidParameters", "The group that you want to delete do not exists or do not belongs to your user");
                 }
+
+                // Close connection to the database.
+                conn.close();
+            } else {
+                // Set error message.
+                res = RestUtils.errorResult("AccessDenied", "You must be logged to delete a group");
+            }
         }catch(SQLException e) {
             // Log error and return error message.
             Logger.error(e);
