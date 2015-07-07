@@ -80,17 +80,14 @@ public class SessionResource {
         String res;
         
         // Verify if the user is logged.
-        HttpSession session = request.getSession(true);
-    	Object data = session.getAttribute("user");
-        
-        if(data != null) {
+        if(RestUtils.isLogged(request)) {
             try {
                 // Verify that the username if not empty.
                 if(username != null && !username.isEmpty()) {
                     // Get connection to the database and current user.
                     ConnectionSource conn = DbUtils.getConnection();
                     Dao<User,String> usersDao = DaoManager.createDao(conn, User.class); 
-                    User user = usersDao.queryForId( ((User)data).getId() + "" );
+                    User user = usersDao.queryForId( RestUtils.getUserId(request) + "" );
 
                     // Verify that the username is not already being used and close connection to the database.
                     List<User> users = usersDao.queryForEq("username", username);
