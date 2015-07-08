@@ -5,7 +5,7 @@ The services provided by **jaxFriends** are divided in four groups: _session_, _
 
 All responses are returned as JSON objects using the following format:
 
-```json
+```javascript
 {
     status: 'success',
     data: { /* ... */ }
@@ -14,7 +14,7 @@ All responses are returned as JSON objects using the following format:
 
 The `status` attribute can hold the values _success_ or _error_. If the status is _error_, then the `data` object is going to hold the attributes `code` and `message`:
 
-```json
+```javascript
 {
     status: 'error',
     data: {
@@ -42,7 +42,7 @@ POST  | password | string
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -56,7 +56,7 @@ Log out the user from the system.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -76,7 +76,7 @@ POST  | password | string
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -95,7 +95,7 @@ Get the list of groups that belongs to the user.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: [
@@ -111,7 +111,7 @@ Get the group whose id is equal to ":id".
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: {
@@ -133,7 +133,7 @@ POST  | name | string
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -152,7 +152,7 @@ POST  | name | string
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -165,7 +165,7 @@ Deletes an existing group.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -184,7 +184,7 @@ Get the list of user's friends.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: [
@@ -200,7 +200,7 @@ Get the friend whose id is equal to ":id".
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: {
@@ -230,7 +230,7 @@ POST  | email      | boolean
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -253,7 +253,7 @@ POST  | email      | boolean
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -266,7 +266,7 @@ Deletes an existing friend.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -284,7 +284,7 @@ Get the list of users.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: [
@@ -300,7 +300,7 @@ Get the user whose id is equal to ":id".
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: {
@@ -326,7 +326,7 @@ POST  | admin    | boolean
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -347,7 +347,7 @@ POST  | admin    | boolean
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
@@ -360,7 +360,7 @@ Deletes an existing user.
 
 #### Response (example):
 
-```json
+```javascript
 {
     status: 'success',
     data: null
