@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="windows-1252">
+    <title>QUnit tests for jaxFriends</title>
+    <script type="text/javascript" src="lib/underscore-1.8.3.min.js"></script>
+    <script type="text/javascript" src="lib/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.rest-1.0.2.min.js"></script>
+    <script type="text/javascript" src="lib/qunit-1.18.0.min.js"></script>
+    <link rel="stylesheet" href="lib/qunit-1.18.0.min.css">
+</head>
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script type="text/javascript">
+    // --- Configuration --- //    
+        
+    // Initialize accounts to use in the tests.
+    var accounts = { 
+        admin: {username: 'admin', password: 'admin'}, 
+        basic: {username: 'demo', password: 'demo'},
+        invalid: {username: 'invalid', password: 'invalid'},
+    };
+       
+    // Initialize REST client.
+    var client = new $.RestClient('rest/');
+    client.add('friends');
+    client.add('groups');
+    client.add('users');
+    client.add('session');
+
+    // Handler generator for failed AJAX calls.
+    var failHandler = function(assert, done) {
+        return function(info) { 
+            assert.ok( false, "Call failed (" + info.status + " - " + info.statusText + ")");
+            done();
+        };
+    };
+
+    // Configure QUnit.
+    QUnit.config.reorder = false;
+    
+    
+    
+    // --- Tests --- //
+    
+    QUnit.module("Session");
+    
+    QUnit.test("Test login and logout", function( assert ) {
+        // Initialization.
+        assert.expect(5);
+
+        function testLoginLogout(user, good, callback) {
+            var done = assert.async();
+            client.session.create('login', user).done(function (data) {
+                // Verify if the user was supossed to succed.
+                if(good) {
+                    assert.equal(data.status, "success", "User '" + user.username +"' logged in" );
+
+                    client.session.read('logout').done(function (data) {
+                        assert.equal(data.status, "success", "User '" + user.username +"' logged out" );
+                        done();
+
+                        if(callback) callback();
+                    }).fail(failHandler(assert, done) );
+                } else {
+                    assert.equal(data.status, "error", "User '" + user.username +"' was not logged in" );
+                    done();
+                }
+            }).fail(failHandler(assert, done) );
+        }
+
+        // Tests.
+        testLoginLogout(accounts.basic, true, function() {
+            testLoginLogout(accounts.admin, true, function() {
+                testLoginLogout(accounts.invalid, false);
+            });
+        });
+    });
+    
+    QUnit.test("Test update", function( assert ) {
+        // Initialization.
+        assert.expect(6);
+
+        // Tests.
+        var done = assert.async();
+        client.session.create('login', accounts.basic).done(function (data) {
+            assert.equal(data.status, "success", "User " + accounts.basic.username +" logged in" );
+
+            var newCredentials = {username: accounts.basic.username + "2", password: accounts.basic.password+"2"};
+            client.session.update('update', newCredentials).done(function (data) {
+                assert.equal(data.status, "success", "User '" + accounts.basic.username +"' is now '" + newCredentials.username + "'" );
+                
+                client.session.create('login', newCredentials).done(function (data) {
+                    assert.equal(data.status, "success", "User " + newCredentials.username +" logged in" );
+                    
+                    client.session.update('update', accounts.basic).done(function (data) {
+                        assert.equal(data.status, "success", "User '" + newCredentials.username +"' returned to be '" + accounts.basic.username + "'" );
+                        
+                        client.session.update('update', accounts.admin).done(function (data) {
+                            assert.equal(data.status, "error", "User '" + accounts.basic.username +"' can't be '" + accounts.admin.username + "'" );
+                            
+                            client.session.read('logout').done(function (data) {
+                                assert.equal(data.status, "success", "User '" + accounts.basic.username +"' logged out" );
+                                done();
+                            }).fail(failHandler(assert, done) );
+                        }).fail(failHandler(assert, done) );
+                    }).fail(failHandler(assert, done) );
+                }).fail(failHandler(assert, done) );
+            }).fail(failHandler(assert, done) );
+        }).fail(failHandler(assert, done) );
+    });    
+
+
+
+    QUnit.module("Groups");
+    
+    QUnit.test("Test access denied for users not logged", function( assert ) {
+        // Initialization.
+        assert.expect(5);
+
+        // Tests.
+        var done_list = assert.async();
+        client.groups.read().done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Group list can't be read without being logged" );
+            done_list();
+        }).fail(failHandler(assert, done_list) );
+        
+        var done_get = assert.async();
+        client.groups.read(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Groups can't be read without being logged" );
+            done_get();
+        }).fail(failHandler(assert, done_get) );
+        
+        var done_create = assert.async();
+        client.groups.create({name: 'Grosos'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Groups can't be created without being logged" );
+            done_create();
+        }).fail(failHandler(assert, done_create) );
+        
+        var done_update = assert.async();
+        client.groups.update(1, {name: 'Grosos'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Groups can't be updated without being logged" );
+            done_update();
+        }).fail(failHandler(assert, done_update) );
+        
+        var done_delete = assert.async();
+        client.groups.destroy(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Groups can't be deleted without being logged" );
+            done_delete();
+        }).fail(failHandler(assert, done_delete) );
+    });      
+    
+    QUnit.test("Test CRUD operations", function( assert ) {
+        // Initialization.
+        assert.expect(10);
+
+        // Tests.
+        var done = assert.async();
+        client.session.create('login', accounts.basic).done(function (result) {
+            assert.equal(result.status, "success", "User " + accounts.basic.username +" logged in" );
+            
+            var newGroupName = "Grosos";
+            client.groups.create({name: newGroupName}).done(function (result) {
+                assert.equal(result.status, "success", "A new group ('"+newGroupName+"') was created");
+
+                client.groups.read().done(function (result) {
+                    assert.equal(result.status, "success", "The list of groups was obtained");
+
+                    var groups = result.data;
+                    var newGroup = _.findWhere(groups, {name: newGroupName});
+                    assert.notEqual(newGroup, null, "The new group ('"+newGroupName+"') was within the list");
+
+                    client.groups.read(newGroup.id).done(function (result) {
+                        assert.equal(result.status, "success", "The new group was found by his id ('"+newGroup.id+"')");
+                        newGroup = result.data;
+
+                        newGroupName += " 2";
+                        client.groups.update(newGroup.id, {name: newGroupName}).done(function (result) {
+                            assert.equal(result.status, "success", "The new group was renamed ('"+newGroupName+"')");
+                            
+                            client.groups.read(newGroup.id).done(function (result) {
+                                assert.equal(result.data.name, newGroupName, "The change of name was confirmed");
+                                
+                                client.groups.destroy(newGroup.id).done(function (result) {
+                                    assert.equal(result.status, "success", "The new group was deleted");
+                                    
+                                    client.groups.read().done(function (result) {
+                                        var groups = result.data;
+                                        var myGroup = _.findWhere(groups, {id: newGroup.id});
+                                        assert.equal(myGroup, null, "Deletion fo the new group was confirmed");
+
+                                        client.session.read('logout').done(function (result) {
+                                            assert.equal(result.status, "success", "User '" + accounts.basic.username +"' logged out" );
+                                            done();
+                                        }).fail(failHandler(assert, done) );
+                                    }).fail(failHandler(assert, done) );
+                                }).fail(failHandler(assert, done) );
+                            }).fail(failHandler(assert, done) );
+                        }).fail(failHandler(assert, done) );
+                    }).fail(failHandler(assert, done) );
+                }).fail(failHandler(assert, done) );            
+            }).fail(failHandler(assert, done) );
+        }).fail(failHandler(assert, done) );
+    });
+    
+    
+    
+    QUnit.module("Friends");
+    
+    QUnit.test("Test access denied for users not logged", function( assert ) {
+        // Initialization.
+        assert.expect(5);
+
+        // Tests.
+        var done_list = assert.async();
+        client.friends.read().done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Friend list can't be read without being logged" );            
+            done_list();
+        }).fail(failHandler(assert, done_list) );
+        
+        var done_get = assert.async();
+        client.friends.read(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Friends can't be read without being logged" );
+            done_get();
+        }).fail(failHandler(assert, done_get) );
+        
+        var done_create = assert.async();
+        client.friends.create({group_id: 1, first_name: 'Pepe'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Friends can't be created without being logged" );
+            done_create();
+        }).fail(failHandler(assert, done_create) );
+        
+        var done_update = assert.async();
+        client.friends.update(1, {group_id: 1, first_name: 'Pepe'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Friends can't be updated without being logged" );
+            done_update();
+        }).fail(failHandler(assert, done_update) );
+        
+        var done_delete = assert.async();
+        client.friends.destroy(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Friends can't be deleted without being logged" );
+            done_delete();
+        }).fail(failHandler(assert, done_delete) );
+    });        
+
+    QUnit.test("Test CRUD operations", function( assert ) {
+        // Initialization.
+        assert.expect(12);
+
+        // Tests.
+        var done = assert.async();
+        client.session.create('login', accounts.basic).done(function (result) {
+            assert.equal(result.status, "success", "User " + accounts.basic.username +" logged in" );
+            
+            var newGroupName = "Grosos";
+            client.groups.create({name: newGroupName}).done(function (result) {
+                assert.equal(result.status, "success", "A new group ('"+newGroupName+"') was created");
+
+                client.groups.read().done(function (result) {
+                    var groups = result.data;
+                    var newGroup = _.findWhere(groups, {name: newGroupName});
+                    assert.notEqual(newGroup, null, "The new group ('"+newGroupName+"') was within the list");
+
+                    var newFriend = {
+                        group_id: newGroup.id,
+                        first_name: "Pancho",
+                        last_name: "Lopez",
+                        telehpone: "555-1234",
+                        email: "pancho@lopez.free"
+                    }
+                    client.friends.create(newFriend).done(function (result) {
+                        assert.equal(result.status, "success", "A new friend ('"+newFriend.first_name+"') was created");
+
+                        client.friends.read().done(function (result) {
+                            var friends = result.data;
+                            var myFriend = _.findWhere(friends, {firstname: newFriend.first_name, lastname: newFriend.last_name});
+                            assert.notEqual(myFriend, null, "The new friend ('"+myFriend.firstname+"') was within the list");
+
+                            client.friends.read(myFriend.id).done(function (result) {
+                                assert.equal(result.status, "success", "The new friend was found by his id ('"+myFriend.id+"')");
+
+                                newFriend.first_name += " Jr.";
+                                client.friends.update(myFriend.id, newFriend).done(function (result) {
+                                    assert.equal(result.status, "success", "The new friend was renamed ('"+newFriend.first_name+"')");
+
+                                    client.friends.read(myFriend.id).done(function (result) {
+                                        myFriend = result.data;
+                                        assert.equal(myFriend.firstname, newFriend.first_name, "The change of name was confirmed");
+
+                                        client.friends.destroy(myFriend.id).done(function (result) {
+                                            assert.equal(result.status, "success", "The new friend was deleted");
+
+                                            client.friends.read().done(function (result) {
+                                                var friends = result.data;
+                                                var exFriend = _.findWhere(friends, {id: myFriend.id});
+                                                assert.equal(exFriend, null, "Deletion fo the new friend was confirmed");
+                                                
+                                                client.groups.destroy(newGroup.id).done(function (result) {
+                                                    assert.equal(result.status, "success", "The new group was deleted");
+
+                                                    client.session.read('logout').done(function (result) {
+                                                        assert.equal(result.status, "success", "User '" + accounts.basic.username +"' logged out" );
+                                                        done();
+                                                    }).fail(failHandler(assert, done) );
+                                                }).fail(failHandler(assert, done) );
+                                            }).fail(failHandler(assert, done) );
+                                        }).fail(failHandler(assert, done) );
+                                    }).fail(failHandler(assert, done) );
+                                }).fail(failHandler(assert, done) );
+                            }).fail(failHandler(assert, done) );
+                        }).fail(failHandler(assert, done) );
+                    }).fail(failHandler(assert, done) );
+                }).fail(failHandler(assert, done) );            
+            }).fail(failHandler(assert, done) );
+        }).fail(failHandler(assert, done) );
+    });    
+    
+    
+    
+    QUnit.module("Users");
+    
+    QUnit.test("Test access denied for users not logged", function( assert ) {
+        // Initialization.
+        assert.expect(5);
+
+        // Tests.
+        var done_list = assert.async();
+        client.users.read().done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "User list can't be read without being logged" );
+            done_list();
+        }).fail(failHandler(assert, done_list) );
+        
+        var done_get = assert.async();
+        client.users.read(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be read without being logged" );
+            done_get();
+        }).fail(failHandler(assert, done_get) );
+        
+        var done_create = assert.async();
+        client.users.create({username: 'usuario', password: 'secreto'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be created without being logged" );
+            done_create();
+        }).fail(failHandler(assert, done_create) );
+        
+        var done_update = assert.async();
+        client.users.update(1, {username: 'usuario', password: 'secreto'}).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be updated without being logged" );
+            done_update();
+        }).fail(failHandler(assert, done_update) );
+        
+        var done_delete = assert.async();
+        client.users.destroy(1).done(function (data) {
+            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be deleted without being logged" );
+            done_delete();
+        }).fail(failHandler(assert, done_delete) );
+    });        
+
+    QUnit.test("Test access denied for users that are not administrators", function( assert ) {
+        // Initialization.
+        assert.expect(7);
+
+        var done = assert.async();
+        client.session.create('login', accounts.basic).done(function (data) {
+            assert.equal(data.status, "success", "User " + accounts.basic.username +" logged in" );
+
+            client.users.read().done(function (data) {
+                assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "User list can't be read without being administrator" );
+
+                client.users.read(1).done(function (data) {
+                    assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be read without being logged" );
+                
+                    client.users.create({username: 'usuario', password: 'secreto'}).done(function (data) {
+                        assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be created without being logged" );
+                        
+                        client.users.update(1, {username: 'usuario', password: 'secreto'}).done(function (data) {
+                            assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be updated without being logged" );
+                            
+                            client.users.destroy(1).done(function (data) {
+                                assert.equal(data.error? data.error.code : data.status, data.error? "AccessDenied" : "error", "Users can't be deleted without being logged" );
+                                
+                                client.session.read('logout').done(function (data) {
+                                    assert.equal(data.status, "success", "User '" + accounts.basic.username +"' logged out" );
+                                    done();
+                                }).fail(failHandler(assert, done) );                                
+                            }).fail(failHandler(assert, done) );
+                        }).fail(failHandler(assert, done) );
+                    }).fail(failHandler(assert, done) );
+                }).fail(failHandler(assert, done) );
+            }).fail(failHandler(assert, done) );
+        }).fail(failHandler(assert, done) );
+    });    
+    
+    QUnit.test("Test CRUD operations", function( assert ) {
+        // Initialization.
+        assert.expect(10);
+
+        // Tests.
+        var done = assert.async();
+        client.session.create('login', accounts.admin).done(function (result) {
+            assert.equal(result.status, "success", "User " + accounts.basic.username +" logged in" );
+            
+            var newUser = {username: "zeus", password: "zeus", admin: 0};
+            client.users.create(newUser).done(function (result) {
+                assert.equal(result.status, "success", "A new user ('"+newUser.username+"') was created");
+
+                client.users.read().done(function (result) {
+                    assert.equal(result.status, "success", "The list of users was obtained");
+
+                    var users = result.data;
+                    var myUser = _.findWhere(users, {username: newUser.username});
+                    assert.notEqual(myUser, null, "The new user ('"+myUser.username+"') was within the list");
+
+                    client.users.read(myUser.id).done(function (result) {
+                        assert.equal(result.status, "success", "The new user was found by his id ('"+myUser.id+"')");
+                        newUser = result.data;
+
+                        newUser.username += " 2";
+                        client.users.update(newUser.id, {username: newUser.username, password: '', admin:1}).done(function (result) {
+                            assert.equal(result.status, "success", "The new user was renamed ('"+newUser.username+"')");
+                            
+                            client.users.read(newUser.id).done(function (result) {
+                                assert.equal(result.data.username, newUser.username, "The change of name was confirmed");
+                                
+                                client.users.destroy(newUser.id).done(function (result) {
+                                    assert.equal(result.status, "success", "The new user was deleted");
+                                    
+                                    client.users.read().done(function (result) {
+                                        var users = result.data;
+                                        var myUser = _.findWhere(users, {id: newUser.id});
+                                        assert.equal(myUser, null, "Deletion fo the new user was confirmed");
+
+                                        client.session.read('logout').done(function (result) {
+                                            assert.equal(result.status, "success", "User '" + accounts.admin.username +"' logged out" );
+                                            done();
+                                        }).fail(failHandler(assert, done) );
+                                    }).fail(failHandler(assert, done) );
+                                }).fail(failHandler(assert, done) );
+                            }).fail(failHandler(assert, done) );
+                        }).fail(failHandler(assert, done) );
+                    }).fail(failHandler(assert, done) );
+                }).fail(failHandler(assert, done) );            
+            }).fail(failHandler(assert, done) );
+        }).fail(failHandler(assert, done) );
+    });    
+    </script>
+</body>
+</html>

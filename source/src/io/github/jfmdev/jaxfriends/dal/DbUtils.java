@@ -73,12 +73,18 @@ public class DbUtils {
                 // Create table.
                 TableUtils.createTable(connectionSource, User.class); 
 
-                // Add default user.
+                // Add default users.
                 User admin = new User();
                 admin.setAdmin(true);
                 admin.setUsername("admin");
                 admin.setPassword(toSHA1("admin"));
                 usersDao.create(admin);
+                
+                User demo = new User();
+                demo.setAdmin(false);
+                demo.setUsername("demo");
+                demo.setPassword(toSHA1("demo"));
+                usersDao.create(demo);
 
                 // Create log entry.
                 Logger.info("Table 'user' created");

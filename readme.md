@@ -7,3 +7,6 @@ jaxFriends
 developer notes bla bla bla ORMLite, MySQL, GSON
 
 how to use bla bla bla executar script sql y configurar conexion con la db en...
+
+index.html contiene la documentacion de la api
+    tal vez deberia ser test.html e index contiene otra cosa

@@ -1,6 +1,5 @@
 package io.github.jfmdev.jaxfriends.rest;
 
-import com.google.gson.Gson;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.stmt.ColumnArg;
@@ -10,7 +9,6 @@ import io.github.jfmdev.jaxfriends.dal.DbUtils;
 import io.github.jfmdev.jaxfriends.dal.Friend;
 import io.github.jfmdev.jaxfriends.dal.Group;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
