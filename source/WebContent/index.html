@@ -1,16 +1,614 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <html>
-    <head>
-        <title>jaxFriends</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>Under construction</div>
-    </body>
+
+<head>
+    <title>jaxFriends</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="lib/highlight/atelier-dune.light.css">
+    <script type="text/javascript" src="lib/highlight/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+    <style type="text/css">
+        body {
+            font-size: 10pt;
+            font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+            text-align: center;
+            background-color: lightsteelblue;
+            margin: 0;
+        }
+        
+        #main {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: justify;
+            background-color: white;
+            padding: 10px;
+            border-left: 2px solid #444;
+            border-right: 2px solid #444;
+            -webkit-box-shadow: 0px 0px 5px 0px rgba(50, 50, 50, 0.75);
+            -moz-box-shadow:    0px 0px 5px 0px rgba(50, 50, 50, 0.75);
+            box-shadow:         0px 0px 5px 0px rgba(50, 50, 50, 0.75);            
+        }
+        
+        h1, h2, h3, h4, h5 { 
+            font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; 
+            margin: 0;
+        }
+        
+        h1 { 
+            color: green; 
+            text-shadow: 1px 1px 2px rgba(0, 128, 0, 0.5);
+        }
+        h2 { 
+            color: blue; 
+            text-shadow: 1px 1px 2px rgba(0, 0, 128, 0.3);
+        } 
+        h3 { color: darkmagenta; }
+        h4 { color: darkred; }
+        h5 { color: darkcyan; }
+        
+        h1 { font-size: 18pt; }
+        h2 { font-size: 14pt; }
+        h3 { font-size: 13pt; }
+        h4 { font-size: 11pt; }
+        h5 { font-size: 10pt; }
+        
+        h1 { 
+            text-align: center; 
+            margin-top: 10px; 
+        }
+        
+        h4 { margin-top: 15px; }
+        
+        table {
+            margin: 10px 15px;
+            border-collapse: collapse;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        table td, table th {
+            padding: 5px 10px;
+            border: 1px solid darkgrey;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+
+<body><div id="main">
+<h1>jaxFriends</h1>
+
+<p><strong>jaxFriends</strong> is a <em>Contact REST API</em>, developed as an example for learning how to develop <em>RESTful web services</em> using Java and JAX-RS.</p>
+
+<h2>Features</h2>
+
+<p>Standard&#39;s user can:</p>
+
+<ul>
+<li>Login into the application.</li>
+<li>Get his list of friends.</li>
+<li>Create a new friend.</li>
+<li>Edit or delete an existing friend.</li>
+<li>Change his username or password.</li>
+</ul>
+
+<p>Administrator&#39;s users can (additionally) manage the application&#39;s users (display the list of users, create a new user or edit an existing user).</p>
+
+<h2>Usage</h2>
+
+<p>The application should be able to run in any valid <em>Java EE</em> container, such as Tomcat, WildFly, WebLogic, Jetty, GlassFish, etc.</p>
+
+<p>The applications makes uses of a MySQL database, whose parameters must be defined in the file <code>config.properties</code> (located in the folder <code>source\WebContent\WEB-INF</code>). The database is created and populated in the first run, so no SQL scripts needs to be executed in the database.</p>
+
+<p>After installation, two default accounts can be used to login: &quot;admin&quot; and &quot;demo&quot; (whose passwords are respectively &quot;admin&quot; and &quot;demo&quot;).</p>
+
+<p>Optionally, you can configure the path in which the log files are going to be created. In order to do it, you must edit the file <code>tinylog.properties</code> located in the folder <code>source\WebContent\WEB-INF</code>).`.</p>
+
+<h2>Stack</h2>
+
+<p>The application was developed using:</p>
+
+<ul>
+<li><em>Java</em> as programming language.</li>
+<li><em>Jersey</em> as RESTful framework.</li>
+<li><em>ORMLite</em> as ORM library for interact with the database (along with <em>JDBC</em>).</li>
+<li><em>Tinylog</em> as logger library.</li>
+<li><em>Gson</em> for JSON serialization.</li>
+</ul>
+
+<h2>API documentation</h2>
+
+<p>The services provided by <strong>jaxFriends</strong> are divided in four groups: <em>session</em>, <em>friends</em>, <em>groups</em> and <em>users</em>, whose specific services are detailed below.</p>
+
+<p>All responses are returned as JSON objects using the following format:</p>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: { /* ... */ }
+}
+</code></pre>
+
+<p>The <code>status</code> attribute can hold the values <em>success</em> or <em>error</em>. If the status is <em>error</em>, then the <code>data</code> object is going to hold the attributes <code>code</code> and <code>message</code>:</p>
+
+<pre><code class="javascript">{
+    status: 'error',
+    data: {
+        code: 'InvalidParameters',
+        message: 'The name is a required value'
+    }
+}
+</code></pre>
+
+<h3>Session</h3>
+
+<p>This services are related to the login and logout operations within the system.</p>
+
+<h4><strong>POST</strong> <code>rest/session/login</code></h4>
+
+<p>Authenticates the user into the system.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>username</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>password</td>
+<td>string</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>GET</strong> <code>rest/session/logout</code></h4>
+
+<p>Log out the user from the system.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>PUT</strong> <code>rest/session/update</code></h4>
+
+<p>Updates the username and/or password of the logged user.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>username</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>password</td>
+<td>string</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h3>Groups</h3>
+
+<p>This services are related to the administrator of groups, in which friends can be organized.</p>
+
+<h4><strong>GET</strong> <code>rest/groups</code></h4>
+
+<p>Get the list of groups that belongs to the user.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: [
+        {id: 1, name: 'Friends'},
+        {id: 2, name: 'Work'}
+    ]
+}
+</code></pre>
+
+<h4><strong>GET</strong> <code>rest/groups/:id</code></h4>
+
+<p>Get the group whose id is equal to &quot;:id&quot;.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: {
+        id: 1, 
+        name: 'Friends'
+    }
+}
+</code></pre>
+
+<h4><strong>POST</strong> <code>rest/users/:id</code></h4>
+
+<p>Creates a new group.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>name</td>
+<td>string</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>PUT</strong> <code>rest/groups/:id</code></h4>
+
+<p>Updates an existing group.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>name</td>
+<td>string</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>DELETE</strong> <code>rest/groups/:id</code></h4>
+
+<p>Deletes an existing group.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h3>Friends</h3>
+
+<p>This services are related to the administrator of an user&#39;s friends.</p>
+
+<h4><strong>GET</strong> <code>rest/friends</code></h4>
+
+<p>Get the list of user&#39;s friends.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: [
+        {id: 1, firstname: 'John', lastname: 'Smith', telephone: '555-1234', email: 'john@smith.com', group: {id: 2}},
+        {id: 2, firstname: 'Pancho', lastname: 'Lopez', telephone: null, email: 'pancho@lopez.com', group: {id: 3}}
+    ]
+}
+</code></pre>
+
+<h4><strong>GET</strong> <code>rest/friends/:id</code></h4>
+
+<p>Get the friend whose id is equal to &quot;:id&quot;.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: {
+        id: 1, 
+        firstname: 'John', 
+        lastname: 'Smith', 
+        telephone: '555-1234', 
+        email: 'john@smith.com', 
+        group: {id: 2}
+    }
+}
+</code></pre>
+
+<h4><strong>POST</strong> <code>rest/friends/:id</code></h4>
+
+<p>Creates a new friend.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>group_id</td>
+<td>integer</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>first_name</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>last_name</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>telephone</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>email</td>
+<td>boolean</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>PUT</strong> <code>rest/friends/:id</code></h4>
+
+<p>Updates an existing friend.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>group_id</td>
+<td>integer</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>first_name</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>last_name</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>telephone</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>email</td>
+<td>boolean</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>DELETE</strong> <code>rest/friends/:id</code></h4>
+
+<p>Deletes an existing friend.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h3>Users</h3>
+
+<p>This services are related to the administrations of user&#39;s accounts. Note that only users with administrator privileges can consume this services.</p>
+
+<h4><strong>GET</strong> <code>rest/users</code></h4>
+
+<p>Get the list of users.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: [
+        {id: 1, username: 'john', password: 'a51dda7c7ff50b61eaea0444371f4a6a9301e501', admin: true},
+        {id: 2, username: 'jane', password: '8a8deed44623d4c44268c26652d80945851c4f7f', admin: false}
+    ]
+}
+</code></pre>
+
+<h4><strong>GET</strong> <code>rest/users/:id</code></h4>
+
+<p>Get the user whose id is equal to &quot;:id&quot;.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: {
+        id: 1, 
+        username: 'john', 
+        password: 'a51dda7c7ff50b61eaea0444371f4a6a9301e501', 
+        admin: true
+    }
+}
+</code></pre>
+
+<h4><strong>POST</strong> <code>rest/users/:id</code></h4>
+
+<p>Creates a new user.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>username</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>password</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>admin</td>
+<td>boolean</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>PUT</strong> <code>rest/users/:id</code></h4>
+
+<p>Updates an existing user.</p>
+
+<h5>Parameters:</h5>
+
+<table><thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Values</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>POST</td>
+<td>username</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>password</td>
+<td>string</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>admin</td>
+<td>boolean</td>
+</tr>
+</tbody></table>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h4><strong>DELETE</strong> <code>rest/users/:id</code></h4>
+
+<p>Deletes an existing user.</p>
+
+<h5>Response (example):</h5>
+
+<pre><code class="javascript">{
+    status: 'success',
+    data: null
+}
+</code></pre>
+
+<h2>License</h2>
+
+<p>This application is free software; you can redistribute it and/or
+modify it under the terms of the GNU Affero General Public
+License as published by the Free Software Foundation; either
+version 3 of the License, or (at your option) any later version.</p>
+
+<p>This application is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Affero General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Affero General Public
+License along with this application; If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+</div>
+</body>
 </html>
