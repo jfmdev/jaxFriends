@@ -21,11 +21,11 @@ Usage
 
 The application should be able to run in any valid _Java EE_ container, such as Tomcat, WildFly, WebLogic, Jetty, GlassFish, etc.
 
-The applications makes uses of a MySQL database, whose parameters must be defined in the file `config.properties` (located in the folder `source\WebContent\WEB-INF`). The database is created and populated in the first run, so no SQL scripts needs to be executed in the database.
+The application makes uses of a MySQL database, whose parameters must be defined in the file `config.properties` (located in the folder `source\WebContent\WEB-INF`). The database is created and populated in the first run, so no SQL scripts needs to be executed in the database.
 
 After installation, two default accounts can be used to login: "admin" and "demo" (whose passwords are respectively "admin" and "demo").
 
-Optionally, you can configure the path in which the log files are going to be created. In order to do it, you must edit the file `tinylog.properties` located in the folder `source\WebContent\WEB-INF`).`.
+Optionally, you can configure the path in which the log files are going to be created. In order to do it, you must edit the file `tinylog.properties` located in the folder `source\WebContent\WEB-INF`).
 
 Stack
 -----
